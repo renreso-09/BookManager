@@ -1,0 +1,19 @@
+### 書籍登録
+POST http://localhost:8080/api/books
+Content-Type: application/json
+
+{
+  "title": "よくわかるJavaScript",
+  "price": 2500,
+  "status": "PREVIEW",
+  "authors": [
+    {
+      "name": "山田太郎",
+      "birthDay": "1985-01-01"
+    },
+    {
+      "name": "佐藤花子",
+      "birthDay": "1990-05-15"
+    }
+  ]
+}

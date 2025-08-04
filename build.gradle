@@ -1,0 +1,102 @@
+buildscript {
+	dependencies {
+		classpath 'org.flywaydb:flyway-mysql:10.21.0'
+	}
+}
+
+plugins {
+	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
+	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+	id 'org.springframework.boot' version '3.5.4'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.flywaydb.flyway' version '10.21.0'
+	id 'nu.studer.jooq' version '8.2.1'
+}
+
+group = 'com.github.renreso-09'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+ext['jooq.version'] = '3.19.1'
+
+dependencies {
+	implementation 'io.github.cdimascio:dotenv-kotlin:6.5.1'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-jooq'
+	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.flywaydb:flyway-core'
+	implementation 'org.flywaydb:flyway-mysql'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	jooqGenerator 'com.mysql:mysql-connector-j'
+	jooqGenerator 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'
+	jooqGenerator 'org.jooq:jooq:3.19.1'
+	jooqGenerator 'org.jooq:jooq-meta:3.19.1'
+	jooqGenerator 'org.jooq:jooq-codegen:3.19.1'
+}
+
+kotlin {
+	compilerOptions {
+		freeCompilerArgs.addAll '-Xjsr305=strict'
+	}
+}
+
+flyway {
+	url = "jdbc:mysql://localhost:3306/book_manager"
+	user = "dev_user"
+	password = "password"
+	driver = "com.mysql.cj.jdbc.Driver"
+	cleanDisabled = false
+}
+
+jooq {
+	configurations {
+		main {
+			generationTool {
+				logging = org.jooq.meta.jaxb.Logging.WARN
+				jdbc {
+					driver = 'com.mysql.cj.jdbc.Driver'
+					url = 'jdbc:mysql://localhost:3306/book_manager'
+					user = 'dev_user'
+					password = 'password'
+				}
+				generator {
+					name = 'org.jooq.codegen.DefaultGenerator'
+					database {
+						name = 'org.jooq.meta.mysql.MySQLDatabase'
+						inputSchema = 'book_manager'
+					}
+					generate {
+						deprecated = false
+						records = true
+						immutablePojos = true
+						fluentSetters = true
+					}
+					target {
+						packageName = 'com.github.renreso-09.bookmanager.jooq'
+						directory = 'build/generated-src/jooq/main'  // default (can be omitted)
+					}
+					strategy.name = 'org.jooq.codegen.DefaultGeneratorStrategy'
+				}
+			}
+		}
+	}
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
