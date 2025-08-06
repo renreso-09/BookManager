@@ -6,6 +6,7 @@ import com.github.renreso_09.bookmanager.jooq.Tables.BOOK_AUTHOR_RELATIONS
 
 interface BookAuthorRelationRepository {
     fun create(bookId: Int, authorId: Int): Boolean
+    fun deleteByBookId(bookId: Int): Boolean
 }
 
 @Repository
@@ -14,6 +15,13 @@ class BookAuthorRelationRepositoryImpl(private val dsl: DSLContext) : BookAuthor
         val result = dsl.insertInto(BOOK_AUTHOR_RELATIONS)
             .set(BOOK_AUTHOR_RELATIONS.BOOK_ID, bookId)
             .set(BOOK_AUTHOR_RELATIONS.AUTHOR_ID, authorId)
+            .execute()
+        return result > 0
+    }
+
+    override fun deleteByBookId(bookId: Int): Boolean {
+        val result = dsl.deleteFrom(BOOK_AUTHOR_RELATIONS)
+            .where(BOOK_AUTHOR_RELATIONS.BOOK_ID.eq(bookId))
             .execute()
         return result > 0
     }

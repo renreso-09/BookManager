@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotEmpty
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
-data class BookCreateRequest(
+data class BookUpdateRequest(
     @field:JsonProperty("title")
     @field:NotBlank(message = "書籍のタイトルは必須です")
     val title: String,
@@ -27,5 +27,5 @@ data class BookCreateRequest(
     @field:JsonProperty("authors")
     @field:NotBlank(message = "書籍の著者は必須です")
     @field:NotEmpty(message = "著者は最低1人必要です")
-    val authors: List<AuthorCreateRequest>
+    val authors: List<AuthorUpdateRequest>
 )

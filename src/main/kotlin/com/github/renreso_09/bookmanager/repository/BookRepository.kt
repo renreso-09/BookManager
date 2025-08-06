@@ -9,8 +9,10 @@ import org.springframework.stereotype.Repository
 
 interface BookRepository {
     fun findAll(): List<Book>
+    fun findById(id: Int): Book?
     fun findByAuthorId(authorId: Int): List<Book>
     fun create(book: Book): Book
+    fun update(book: Book): Book
 }
 
 @Repository
@@ -26,6 +28,19 @@ class BookRepositoryImpl(private val dsl: DSLContext) : BookRepository {
                 status = record.getValue(BOOKS.STATUS)
             )
         }
+    }
+
+    override fun findById(id: Int): Book? {
+        val record = dsl.selectFrom(BOOKS)
+            .where(BOOKS.ID.eq(id))
+            .fetchOne() ?: return null
+
+        return Book(
+            id = record.getValue(BOOKS.ID),
+            title = record.getValue(BOOKS.TITLE),
+            price = record.getValue(BOOKS.PRICE),
+            status = record.getValue(BOOKS.STATUS)
+        )
     }
 
 //    AuthorIdに紐づく書籍を取得
@@ -55,5 +70,17 @@ class BookRepositoryImpl(private val dsl: DSLContext) : BookRepository {
             .fetchOne() ?: throw IllegalStateException("Failed to insert book")
 
         return book.copy(id = record.getValue(BOOKS.ID))
+    }
+
+    // 書籍を更新
+    override fun update(book: Book): Book {
+        dsl.update(BOOKS)
+            .set(BOOKS.TITLE, book.title)
+            .set(BOOKS.PRICE, book.price)
+            .set(BOOKS.STATUS, book.status)
+            .where(BOOKS.ID.eq(book.id))
+            .execute()
+
+        return book
     }
 }

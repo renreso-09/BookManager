@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.NotBlank
 import java.time.LocalDate
 
-data class AuthorCreateRequest(
+data class AuthorUpdateRequest(
     @field:JsonProperty("name")
     @field:NotBlank(message = "著者の名前は必須です")
     val name: String,
