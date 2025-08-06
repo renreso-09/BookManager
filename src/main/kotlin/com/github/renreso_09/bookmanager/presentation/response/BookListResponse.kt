@@ -15,10 +15,10 @@ data class BookResponse(
     companion object {
         fun fromDomain(book: Book): BookResponse {
             return BookResponse(
-                id = book.id ?: throw IllegalArgumentException("Book ID cannot be null"),
+                id = book.id?.value ?: throw IllegalArgumentException("Book ID cannot be null"),
                 title = book.title,
                 price = book.price,
-                status = book.status
+                status = book.status.value
             )
         }
     }
