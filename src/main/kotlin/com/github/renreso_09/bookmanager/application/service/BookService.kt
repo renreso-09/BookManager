@@ -9,8 +9,10 @@ import com.github.renreso_09.bookmanager.domain.model.BookId
 import com.github.renreso_09.bookmanager.domain.model.BookStatus
 import com.github.renreso_09.bookmanager.presentation.request.BookCreateRequest
 import com.github.renreso_09.bookmanager.presentation.request.BookUpdateRequest
+import com.github.renreso_09.bookmanager.presentation.response.BookCreateResponse
 import com.github.renreso_09.bookmanager.presentation.response.BookListResponse
 import com.github.renreso_09.bookmanager.presentation.response.BookResponse
+import com.github.renreso_09.bookmanager.presentation.response.BookUpdateResponse
 import com.github.renreso_09.bookmanager.repository.AuthorRepository
 import com.github.renreso_09.bookmanager.repository.BookAuthorRelationRepository
 import com.github.renreso_09.bookmanager.repository.BookRepository
@@ -20,8 +22,8 @@ import java.time.LocalDate
 
 interface BookService {
     fun findByAuthorId(authorId: Int): BookListResponse
-    fun create(request: BookCreateRequest)
-    fun update(bookId: Int, request: BookUpdateRequest)
+    fun create(request: BookCreateRequest): BookCreateResponse
+    fun update(bookId: Int, request: BookUpdateRequest): BookUpdateResponse
 }
 
 @Service
@@ -39,7 +41,7 @@ class BookServiceImpl(
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    override fun create(request: BookCreateRequest) {
+    override fun create(request: BookCreateRequest): BookCreateResponse {
         // 著者が1人以上いることを確認
         if (request.authors.isEmpty()) {
             throw BadRequestException("著者は最低1人必要です")
@@ -90,11 +92,11 @@ class BookServiceImpl(
             throw BadRequestException("著者が見つかりませんでした")
         }
         bookAuthorRelationRepository.batchCreateByBookId(createdBookId, authorIds)
-
+        return BookCreateResponse(message = "ok")
     }
 
     @Transactional(rollbackFor = [Exception::class])
-    override fun update(bookId: Int, request: BookUpdateRequest) {
+    override fun update(bookId: Int, request: BookUpdateRequest): BookUpdateResponse {
         val book = bookRepository.findById(BookId(bookId))
             ?: throw NotFoundException("書籍が見つかりませんでした")
         // 著者の誕生日が現在の日付より未来でないことを確認
@@ -146,5 +148,6 @@ class BookServiceImpl(
             throw BadRequestException("著者が見つかりませんでした")
         }
         bookAuthorRelationRepository.batchCreateByBookId(BookId(bookId), authorIds)
+        return BookUpdateResponse("ok")
     }
 }
