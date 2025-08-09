@@ -13,6 +13,7 @@ import com.github.renreso_09.bookmanager.presentation.response.BookCreateRespons
 import com.github.renreso_09.bookmanager.presentation.response.BookListResponse
 import com.github.renreso_09.bookmanager.presentation.response.BookResponse
 import com.github.renreso_09.bookmanager.presentation.response.BookUpdateResponse
+import com.github.renreso_09.bookmanager.query.BookListQuery
 import com.github.renreso_09.bookmanager.repository.AuthorRepository
 import com.github.renreso_09.bookmanager.repository.BookAuthorRelationRepository
 import com.github.renreso_09.bookmanager.repository.BookRepository
@@ -30,14 +31,14 @@ interface BookService {
 class BookServiceImpl(
     private val bookRepository: BookRepository,
     private val authorRepository: AuthorRepository,
-    private val bookAuthorRelationRepository: BookAuthorRelationRepository
+    private val bookAuthorRelationRepository: BookAuthorRelationRepository,
+    private val bookListQuery: BookListQuery
 ) : BookService {
     @Transactional(readOnly = true)
     override fun findByAuthorId(authorId: Int): BookListResponse {
-        val books = bookRepository.findByAuthorId(AuthorId(authorId)).map { book ->
-            BookResponse.fromDomain(book)
-        }
-        return BookListResponse(books = books)
+        val bookDTOs = bookListQuery.findByAuthorId(AuthorId(authorId))
+        val books = bookDTOs.map { BookResponse.fromDTO(it) }
+        return BookListResponse(books)
     }
 
     @Transactional(rollbackFor = [Exception::class])
@@ -46,15 +47,15 @@ class BookServiceImpl(
         if (request.authors.isEmpty()) {
             throw BadRequestException("著者は最低1人必要です")
         }
-        // 著者の誕生日が現在の日付より未来でないことを確認
+        // 著者の生年月日のバリデーション
         request.authors.forEach { authorRequest ->
-            val parseBirthDay = try {
-                LocalDate.parse(authorRequest.birthDay)
+            val parseBirthDate = try {
+                LocalDate.parse(authorRequest.birthDate)
             } catch (e: Exception) {
                 throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
-            if (parseBirthDay.isAfter(LocalDate.now())) {
-                throw BadRequestException("著者の誕生日は未来の日付にできません")
+            if (parseBirthDate.isAfter(LocalDate.now())) {
+                throw BadRequestException("著者の生年月日は未来の日付にできません")
             }
         }
         val newBookStatus = BookStatus.fromString(request.status)
@@ -72,16 +73,15 @@ class BookServiceImpl(
         val newAuthors = request.authors.filter { authorRequest ->
             existAuthors.none { it.name == authorRequest.name }
         }.map { authorRequest ->
-            // 誕生日をLocalDateに変換
-            val birthDay = try {
-                LocalDate.parse(authorRequest.birthDay)
+            val birthDate = try {
+                LocalDate.parse(authorRequest.birthDate)
             } catch (e: Exception) {
                 throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             Author(
                 id = null,
                 name = authorRequest.name,
-                birthDay = birthDay
+                birthDate = birthDate
             )
         }
         // 新規著者を登録
@@ -99,14 +99,14 @@ class BookServiceImpl(
     override fun update(bookId: Int, request: BookUpdateRequest): BookUpdateResponse {
         val book = bookRepository.findById(BookId(bookId))
             ?: throw NotFoundException("書籍が見つかりませんでした")
-        // 著者の誕生日が現在の日付より未来でないことを確認
+        // 著者の生年月日のバリデーション
         request.authors.forEach { authorRequest ->
-            val parseBirthDay = try {
-                LocalDate.parse(authorRequest.birthDay)
+            val parseBirthDate = try {
+                LocalDate.parse(authorRequest.birthDate)
             } catch (e: Exception) {
                 throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
-            if (parseBirthDay.isAfter(LocalDate.now())) {
+            if (parseBirthDate.isAfter(LocalDate.now())) {
                 throw BadRequestException("著者の誕生日は未来の日付にできません")
             }
         }
@@ -121,23 +121,23 @@ class BookServiceImpl(
             status = newBookStatus
         )
         bookRepository.update(updatedBook)
-        // 既存の著者との関連を削除
+
         bookAuthorRelationRepository.deleteByBookId(bookId)
-        // 著者を検索
+
         val existAuthors = authorRepository.findByNames(request.authors.map { it.name })
-        // 新規著者のリストを作成
+        //　新規著者のリストを作成
         val newAuthors = request.authors.filter { authorRequest ->
             existAuthors.none { it.name == authorRequest.name }
         }.map { authorRequest ->
-            val birthDay = try {
-                LocalDate.parse(authorRequest.birthDay)
+            val birthDate = try {
+                LocalDate.parse(authorRequest.birthDate)
             } catch (e: Exception) {
                 throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             Author(
                 id = null,
                 name = authorRequest.name,
-                birthDay = birthDay
+                birthDate = birthDate
             )
         }
         // 新規著者を登録

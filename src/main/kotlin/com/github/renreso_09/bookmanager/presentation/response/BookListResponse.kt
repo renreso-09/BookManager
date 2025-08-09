@@ -1,6 +1,6 @@
 package com.github.renreso_09.bookmanager.presentation.response
 
-import com.github.renreso_09.bookmanager.domain.model.Book
+import com.github.renreso_09.bookmanager.query.dto.BookDTO
 
 data class BookListResponse(
     val books: List<BookResponse>
@@ -10,15 +10,22 @@ data class BookResponse(
     val id: Int,
     val title: String,
     val price: Int,
-    val status: String
+    val status: String,
+    val authors: List<AuthorResponse>
 ) {
     companion object {
-        fun fromDomain(book: Book): BookResponse {
+        fun fromDTO(dto: BookDTO): BookResponse {
             return BookResponse(
-                id = book.id?.value ?: throw IllegalArgumentException("Book ID cannot be null"),
-                title = book.title,
-                price = book.price,
-                status = book.status.value
+                id = dto.id,
+                title = dto.title,
+                price = dto.price,
+                status = dto.status,
+                authors = dto.authors.map { author ->
+                    AuthorResponse(
+                        name = author.authorName,
+                        birthDate = author.authorBirthDate
+                    )
+                }
             )
         }
     }

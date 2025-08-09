@@ -1,6 +1,5 @@
 package com.github.renreso_09.bookmanager.presentation.request
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.*
 
 data class BookCreateRequest(
@@ -13,8 +12,8 @@ data class BookCreateRequest(
 
     @field:NotBlank(message = "書籍のステータスは必須です")
     @field:Pattern(
-        regexp = "^(PREVIEW|PUBLISHED)$",
-        message = "書籍のステータスは 'PREVIEW' または 'PUBLISHED' のいずれかでなければなりません"
+        regexp = "^(UNPUBLISHED|PUBLISHED)$",
+        message = "書籍のステータスは 'UNPUBLISHED' または 'PUBLISHED' のいずれかでなければなりません"
     )
     val status: String,
 

@@ -39,9 +39,12 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.jooq:jooq:3.19.1'
+
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
+    testImplementation 'io.mockk:mockk:1.13.8'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
 	jooqGenerator 'com.mysql:mysql-connector-j'
@@ -90,7 +93,7 @@ jooq {
 					}
 					target {
 						packageName = 'com.github.renreso-09.bookmanager.jooq'
-						directory = 'build/generated-src/jooq/main'  // default (can be omitted)
+						directory = 'build/generated-src/jooq/main'
 					}
 					strategy.name = 'org.jooq.codegen.DefaultGeneratorStrategy'
 				}

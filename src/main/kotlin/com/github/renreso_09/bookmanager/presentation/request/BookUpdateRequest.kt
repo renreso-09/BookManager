@@ -13,8 +13,8 @@ data class BookUpdateRequest(
 
     @field:NotBlank(message = "書籍のステータスは必須です")
     @field:Pattern(
-        regexp = "^(PREVIEW|PUBLISHED)$",
-        message = "書籍のステータスは 'PREVIEW' または 'PUBLISHED' のいずれかでなければなりません"
+        regexp = "^(UNPUBLISHED|PUBLISHED)$",
+        message = "書籍のステータスは 'UNPUBLISHED' または 'PUBLISHED' のいずれかでなければなりません"
     )
     val status: String,
 

@@ -1,5 +1,6 @@
 package com.github.renreso_09.bookmanager.repository
 
+import InternalException
 import com.github.renreso_09.bookmanager.domain.model.AuthorId
 import com.github.renreso_09.bookmanager.domain.model.Book
 import com.github.renreso_09.bookmanager.domain.model.BookId
@@ -31,7 +32,7 @@ class BookRepositoryImpl(private val dsl: DSLContext) : BookRepository {
         )
     }
 
-//    AuthorIdに紐づく書籍を取得
+    // AuthorIdに紐づく書籍を取得
     override fun findByAuthorId(authorId: AuthorId): List<Book> {
         val bookRecords = dsl.select()
             .from(BOOKS)
@@ -55,18 +56,21 @@ class BookRepositoryImpl(private val dsl: DSLContext) : BookRepository {
             .set(BOOKS.PRICE, book.price)
             .set(BOOKS.STATUS, book.status.value)
             .returning(BOOKS.ID)
-            .fetchOne() ?: throw IllegalStateException("Failed to insert book")
+            .fetchOne() ?: throw InternalException("書籍の作成に失敗しました")
 
         return BookId(record.getValue(BOOKS.ID))
     }
 
     // 書籍を更新
     override fun update(book: Book): BookId {
+        if (book.id == null) {
+            throw InternalException("書籍IDがありません")
+        }
         val record = dsl.update(BOOKS)
             .set(BOOKS.TITLE, book.title)
             .set(BOOKS.PRICE, book.price)
             .set(BOOKS.STATUS, book.status.value)
-            .where(BOOKS.ID.eq(book.id!!.value))
+            .where(BOOKS.ID.eq(book.id.value))
             .execute()
 
         return BookId(record)
