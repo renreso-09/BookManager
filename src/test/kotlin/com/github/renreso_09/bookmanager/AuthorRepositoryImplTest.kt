@@ -2,9 +2,11 @@ package com.github.renreso_09.bookmanager
 
 import com.github.renreso_09.bookmanager.domain.model.Author
 import com.github.renreso_09.bookmanager.jooq.Tables.AUTHORS
+import com.github.renreso_09.bookmanager.jooq.Tables.BOOK_AUTHOR_RELATIONS
 import com.github.renreso_09.bookmanager.repository.AuthorRepositoryImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.DSLContext
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
@@ -17,6 +19,12 @@ class AuthorRepositoryImplTest @Autowired constructor(
     private val authorRepository: AuthorRepositoryImpl,
     private val dsl: DSLContext,
 ) {
+    @BeforeEach
+    fun setUp() {
+        dsl.deleteFrom(BOOK_AUTHOR_RELATIONS).execute()
+        dsl.deleteFrom(AUTHORS).execute()
+    }
+
     @Test
     fun `bulkCreate は複数著者をまとめて登録しIDを返す`() {
         val authors = listOf(

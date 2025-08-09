@@ -4,9 +4,11 @@ import com.github.renreso_09.bookmanager.domain.model.Book
 import com.github.renreso_09.bookmanager.domain.model.BookId
 import com.github.renreso_09.bookmanager.domain.model.BookStatus
 import com.github.renreso_09.bookmanager.jooq.Tables.BOOKS
+import com.github.renreso_09.bookmanager.jooq.Tables.BOOK_AUTHOR_RELATIONS
 import com.github.renreso_09.bookmanager.repository.BookRepositoryImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.DSLContext
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
@@ -18,6 +20,11 @@ class BookRepositoryImplTest @Autowired constructor(
     private val bookRepository: BookRepositoryImpl,
     private val dsl: DSLContext
 ) {
+    @BeforeEach
+    fun setUp() {
+        dsl.deleteFrom(BOOK_AUTHOR_RELATIONS).execute()
+        dsl.deleteFrom(BOOKS).execute()
+    }
 
     @Test
     fun `findByIdで登録した本が取得できる`() {

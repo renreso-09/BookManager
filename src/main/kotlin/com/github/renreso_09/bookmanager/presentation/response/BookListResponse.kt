@@ -22,6 +22,7 @@ data class BookResponse(
                 status = dto.status,
                 authors = dto.authors.map { author ->
                     AuthorResponse(
+                        id = author.authorId,
                         name = author.authorName,
                         birthDate = author.authorBirthDate
                     )
