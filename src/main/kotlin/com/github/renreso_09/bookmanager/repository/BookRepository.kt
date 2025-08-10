@@ -14,7 +14,7 @@ interface BookRepository {
     fun findById(id: BookId): Book?
     fun findByAuthorId(authorId: AuthorId): List<Book>
     fun create(book: Book): BookId
-    fun update(book: Book): BookId
+    fun update(book: Book)
 }
 
 @Repository
@@ -62,17 +62,15 @@ class BookRepositoryImpl(private val dsl: DSLContext) : BookRepository {
     }
 
     // 書籍を更新
-    override fun update(book: Book): BookId {
+    override fun update(book: Book) {
         if (book.id == null) {
             throw InternalException("書籍IDがありません")
         }
-        val record = dsl.update(BOOKS)
+        dsl.update(BOOKS)
             .set(BOOKS.TITLE, book.title)
             .set(BOOKS.PRICE, book.price)
             .set(BOOKS.STATUS, book.status.value)
             .where(BOOKS.ID.eq(book.id.value))
             .execute()
-
-        return BookId(record)
     }
 }

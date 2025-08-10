@@ -1,31 +1,75 @@
 package com.github.renreso_09.bookmanager
 
 import com.github.renreso_09.bookmanager.domain.model.AuthorId
-import com.github.renreso_09.bookmanager.jooq.Tables.AUTHORS
-import com.github.renreso_09.bookmanager.jooq.Tables.BOOK_AUTHOR_RELATIONS
-import com.github.renreso_09.bookmanager.jooq.Tables.BOOKS
+import com.github.renreso_09.bookmanager.jooq.Tables.*
 import com.github.renreso_09.bookmanager.query.BookListQueryImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.DSLContext
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.Import
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDate
 
 @JooqTest
+@Transactional
+@ActiveProfiles("test")
 @Import(BookListQueryImpl::class)
 class BookListQueryImplTest @Autowired constructor(
     private val dsl: DSLContext,
     private val bookListQuery: BookListQueryImpl,
 ) {
-
     @BeforeEach
     fun setUp() {
-        dsl.deleteFrom(BOOK_AUTHOR_RELATIONS).execute()
-        dsl.deleteFrom(BOOKS).execute()
-        dsl.deleteFrom(AUTHORS).execute()
+        // スキーマ作成
+        dsl.execute("CREATE SCHEMA IF NOT EXISTS book_manager")
+
+        // スキーマ付きでテーブル削除・作成
+        dsl.execute("DROP TABLE IF EXISTS book_manager.books")
+        dsl.execute("DROP TABLE IF EXISTS book_manager.book_status")
+
+        dsl.execute("""
+            CREATE TABLE book_manager.book_status (
+                status VARCHAR(20) PRIMARY KEY
+            )
+        """)
+
+        dsl.execute("""
+             INSERT INTO book_manager.book_status (status) VALUES 
+             ('PUBLISHED'), ('UNPUBLISHED')
+         """)
+
+        dsl.execute("""
+            CREATE TABLE book_manager.books (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                price INT NOT NULL,
+                status VARCHAR(20) NOT NULL,
+                FOREIGN KEY (status) REFERENCES book_manager.book_status (status)
+            )
+        """)
+
+        dsl.execute("""
+            CREATE TABLE book_manager.authors (
+              id INT AUTO_INCREMENT PRIMARY KEY,
+              name TEXT NOT NULL,
+              birth_date DATE NOT NULL
+            );
+        """)
+
+        dsl.execute("""
+            CREATE TABLE book_manager.book_author_relations (
+                book_id BIGINT NOT NULL,
+                author_id INT NOT NULL,
+                PRIMARY KEY (book_id, author_id),
+                FOREIGN KEY (book_id) REFERENCES book_manager.books (id),
+                FOREIGN KEY (author_id) REFERENCES book_manager.authors (id)
+            )
+        """)
     }
 
     @Test
@@ -88,5 +132,10 @@ class BookListQueryImplTest @Autowired constructor(
         assertThat(springBook.price).isEqualTo(3000)
         assertThat(springBook.status).isEqualTo("UNPUBLISHED")
         assertThat(springBook.authors.map { it.authorName }).containsExactly("鈴木花子")
+    }
+
+    @AfterEach
+    fun tearDown() {
+        dsl.execute("DROP ALL OBJECTS")
     }
 }

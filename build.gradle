@@ -40,12 +40,14 @@ dependencies {
 	implementation 'org.flywaydb:flyway-mysql'
     implementation 'org.jooq:jooq:3.19.1'
 
+    testImplementation 'com.h2database:h2'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
     testImplementation 'io.mockk:mockk:1.13.8'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
 
-	runtimeOnly 'com.mysql:mysql-connector-j'
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
 	jooqGenerator 'com.mysql:mysql-connector-j'
 	jooqGenerator 'jakarta.xml.bind:jakarta.xml.bind-api:3.0.1'

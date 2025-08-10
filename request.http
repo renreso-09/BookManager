@@ -5,15 +5,34 @@ Content-Type: application/json
 {
   "title": "よくわかるJavaScript",
   "price": 2500,
-  "status": "PREVIEW",
+  "status": "UNPUBLISHED",
   "authors": [
     {
       "name": "山田太郎",
-      "birthDay": "1985-01-01"
+      "birthDate": "1985-01-01"
     },
     {
       "name": "佐藤花子",
-      "birthDay": "1990-05-15"
+      "birthDate": "1990-05-15"
     }
   ]
 }
+
+### 書籍更新
+PUT http://localhost:8080/api/books/1
+Content-Type: application/json
+
+{
+  "title": "よくわかるJavaScript",
+  "price": 2500,
+  "status": "PUBLISHED",
+  "authors": [
+    {
+      "name": "山田太郎",
+      "birthDate": "1985-01-01"
+    }
+  ]
+}
+
+### 著者に紐づく書籍一覧取得
+GET http://localhost:8080/api/books/authors/1

@@ -12,8 +12,9 @@ CREATE TABLE `books` (
 
 CREATE TABLE `authors` (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  name TEXT NOT NULL,
-  birth_date DATE NOT NULL
+  name VARCHAR(255) NOT NULL,
+  birth_date DATE NOT NULL,
+  UNIQUE KEY `uk_authors_name` (`name`)
 );
 
 CREATE TABLE `book_author_relations` (

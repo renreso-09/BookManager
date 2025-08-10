@@ -3,7 +3,9 @@ package com.github.renreso_09.bookmanager.presentation.controller
 import com.github.renreso_09.bookmanager.application.service.BookService
 import com.github.renreso_09.bookmanager.presentation.request.BookCreateRequest
 import com.github.renreso_09.bookmanager.presentation.request.BookUpdateRequest
+import com.github.renreso_09.bookmanager.presentation.response.BookCreateResponse
 import com.github.renreso_09.bookmanager.presentation.response.BookListResponse
+import com.github.renreso_09.bookmanager.presentation.response.BookUpdateResponse
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,12 +24,12 @@ class BookController(private val bookService: BookService) {
     }
 
     @PostMapping
-    fun create(@RequestBody @Valid request: BookCreateRequest) {
-        bookService.create(request)
+    fun create(@RequestBody @Valid request: BookCreateRequest): BookCreateResponse {
+        return bookService.create(request)
     }
 
     @PutMapping("/{id}")
-    fun update(@PathVariable id: Int, @RequestBody @Valid request: BookUpdateRequest) {
-        bookService.update(id, request)
+    fun update(@PathVariable id: Int, @RequestBody @Valid request: BookUpdateRequest): BookUpdateResponse {
+        return bookService.update(id, request)
     }
 }

@@ -4,17 +4,21 @@ import com.github.renreso_09.bookmanager.domain.model.Book
 import com.github.renreso_09.bookmanager.domain.model.BookId
 import com.github.renreso_09.bookmanager.domain.model.BookStatus
 import com.github.renreso_09.bookmanager.jooq.Tables.BOOKS
-import com.github.renreso_09.bookmanager.jooq.Tables.BOOK_AUTHOR_RELATIONS
 import com.github.renreso_09.bookmanager.repository.BookRepositoryImpl
 import org.assertj.core.api.Assertions.assertThat
 import org.jooq.DSLContext
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jooq.JooqTest
 import org.springframework.context.annotation.Import
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 
 @JooqTest
+@Transactional
+@ActiveProfiles("test")
 @Import(BookRepositoryImpl::class)
 class BookRepositoryImplTest @Autowired constructor(
     private val bookRepository: BookRepositoryImpl,
@@ -22,8 +26,33 @@ class BookRepositoryImplTest @Autowired constructor(
 ) {
     @BeforeEach
     fun setUp() {
-        dsl.deleteFrom(BOOK_AUTHOR_RELATIONS).execute()
-        dsl.deleteFrom(BOOKS).execute()
+        // スキーマ作成
+        dsl.execute("CREATE SCHEMA IF NOT EXISTS book_manager")
+
+        // スキーマ付きでテーブル削除・作成
+        dsl.execute("DROP TABLE IF EXISTS book_manager.books")
+        dsl.execute("DROP TABLE IF EXISTS book_manager.book_status")
+
+        dsl.execute("""
+            CREATE TABLE book_manager.book_status (
+                status VARCHAR(20) PRIMARY KEY
+            )
+        """)
+
+        dsl.execute("""
+             INSERT INTO book_manager.book_status (status) VALUES 
+             ('PUBLISHED'), ('UNPUBLISHED')
+         """)
+
+        dsl.execute("""
+            CREATE TABLE book_manager.books (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(255) NOT NULL,
+                price INT NOT NULL,
+                status VARCHAR(20) NOT NULL,
+                FOREIGN KEY (status) REFERENCES book_manager.book_status (status)
+            )
+        """)
     }
 
     @Test
@@ -90,5 +119,10 @@ class BookRepositoryImplTest @Autowired constructor(
         assertThat(stored!!.getValue(BOOKS.TITLE)).isEqualTo("新タイトル")
         assertThat(stored.getValue(BOOKS.PRICE)).isEqualTo(1500)
         assertThat(stored.getValue(BOOKS.STATUS)).isEqualTo("PUBLISHED")
+    }
+
+    @AfterEach
+    fun tearDown() {
+        dsl.execute("DROP ALL OBJECTS")
     }
 }

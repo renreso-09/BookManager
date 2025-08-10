@@ -107,6 +107,7 @@ class BookServiceImplTest {
             Author(null, "佐藤花子", LocalDate.of(1995, 5, 20))
         )
         every { authorRepository.findByNames(listOf("山田太郎", "佐藤花子")) } returns emptyList()
+        every { bookRepository.update(mockBook) } returns Unit
         every { bookRepository.create(mockBook) } returns BookId(1)
         every { authorRepository.bulkCreate(mockAuthors) } returns listOf(AuthorId(1), AuthorId(2))
         every { bookAuthorRelationRepository.batchCreateByBookId(BookId(1), listOf(AuthorId(1), AuthorId(2))) } returns true
@@ -140,7 +141,10 @@ class BookServiceImplTest {
             Author(null, "佐藤花子", LocalDate.of(1995, 5, 20))
         )
         every { bookRepository.findById(mockBookId) } returns mockBook
-        every { bookRepository.update(mockBook) } returns mockBookId
+        every { bookRepository.update(mockBook) } returns Unit
+        every { authorRepository.bulkUpdate(listOf(
+            Author(AuthorId(1), "山田太郎", LocalDate.of(1990, 1, 1)) // 新しい生年月日
+        )) } returns Unit
         every { bookAuthorRelationRepository.deleteByBookId(mockBookId.value)} returns true
         every { authorRepository.findByNames(listOf("山田太郎", "佐藤花子")) } returns listOf(
             Author(AuthorId(1), "山田太郎", LocalDate.of(1990, 1,1))

@@ -51,8 +51,8 @@ class BookServiceImpl(
         request.authors.forEach { authorRequest ->
             val parseBirthDate = try {
                 LocalDate.parse(authorRequest.birthDate)
-            } catch (e: Exception) {
-                throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+            } catch (_: Exception) {
+                throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             if (parseBirthDate.isAfter(LocalDate.now())) {
                 throw BadRequestException("著者の生年月日は未来の日付にできません")
@@ -69,6 +69,20 @@ class BookServiceImpl(
         val createdBookId = bookRepository.create(book)
         // 著者を検索
         val existAuthors = authorRepository.findByNames(request.authors.map { it.name })
+        // 既存の著者情報の更新
+        val updatedAuthors = existAuthors.mapNotNull { existAuthor ->
+            request.authors.find { it.name == existAuthor.name }?.let { authorRequest ->
+                val birthDate = try {
+                    LocalDate.parse(authorRequest.birthDate)
+                } catch (_: Exception) {
+                    throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+                }
+                existAuthor.copy(birthDate = birthDate)
+            }
+        }
+        if(updatedAuthors.isNotEmpty()) {
+            authorRepository.bulkUpdate(updatedAuthors)
+        }
         // 新規著者のリストを作成
         val newAuthors = request.authors.filter { authorRequest ->
             existAuthors.none { it.name == authorRequest.name }
@@ -76,7 +90,7 @@ class BookServiceImpl(
             val birthDate = try {
                 LocalDate.parse(authorRequest.birthDate)
             } catch (e: Exception) {
-                throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+                throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             Author(
                 id = null,
@@ -103,11 +117,11 @@ class BookServiceImpl(
         request.authors.forEach { authorRequest ->
             val parseBirthDate = try {
                 LocalDate.parse(authorRequest.birthDate)
-            } catch (e: Exception) {
-                throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+            } catch (_: Exception) {
+                throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             if (parseBirthDate.isAfter(LocalDate.now())) {
-                throw BadRequestException("著者の誕生日は未来の日付にできません")
+                throw BadRequestException("著者の生年月日は未来の日付にできません")
             }
         }
         val newBookStatus = BookStatus.updateStatus(
@@ -125,14 +139,29 @@ class BookServiceImpl(
         bookAuthorRelationRepository.deleteByBookId(bookId)
 
         val existAuthors = authorRepository.findByNames(request.authors.map { it.name })
+        // 既存の著者情報の更新
+        val updatedAuthors = existAuthors.mapNotNull { existAuthor ->
+            request.authors.find { it.name == existAuthor.name }?.let { authorRequest ->
+                val birthDate = try {
+                    LocalDate.parse(authorRequest.birthDate)
+                } catch (_: Exception) {
+                    throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+                }
+                existAuthor.copy(birthDate = birthDate)
+            }
+        }
+        if(updatedAuthors.isNotEmpty()) {
+            authorRepository.bulkUpdate(updatedAuthors)
+        }
+
         //　新規著者のリストを作成
         val newAuthors = request.authors.filter { authorRequest ->
             existAuthors.none { it.name == authorRequest.name }
         }.map { authorRequest ->
             val birthDate = try {
                 LocalDate.parse(authorRequest.birthDate)
-            } catch (e: Exception) {
-                throw BadRequestException("誕生日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
+            } catch (_: Exception) {
+                throw BadRequestException("生年月日はyyyy-MM-dd形式で入力してください（例: 2024-01-15）")
             }
             Author(
                 id = null,

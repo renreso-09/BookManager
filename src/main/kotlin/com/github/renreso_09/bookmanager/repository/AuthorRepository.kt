@@ -1,17 +1,17 @@
 package com.github.renreso_09.bookmanager.repository
 
-import InternalException
 import com.github.renreso_09.bookmanager.domain.model.Author
 import com.github.renreso_09.bookmanager.domain.model.AuthorId
-import org.jooq.DSLContext
-import org.springframework.stereotype.Repository
 import com.github.renreso_09.bookmanager.jooq.Tables.AUTHORS
 import com.github.renreso_09.bookmanager.jooq.tables.records.AuthorsRecord
+import org.jooq.DSLContext
 import org.jooq.impl.DSL.row
+import org.springframework.stereotype.Repository
 
 interface AuthorRepository {
     fun findByNames(names: List<String>): List<Author>
     fun bulkCreate(authors: List<Author>): List<AuthorId>
+    fun bulkUpdate(authors: List<Author>)
 }
 
 @Repository
@@ -49,5 +49,15 @@ class AuthorRepositoryImpl(private val dsl: DSLContext) : AuthorRepository {
         return insertedRecords.map { record ->
             AuthorId(record.getValue(AUTHORS.ID))
         }
+    }
+
+    override fun bulkUpdate(authors: List<Author>) {
+        dsl.batch(
+            authors.map { author ->
+                dsl.update(AUTHORS)
+                    .set(AUTHORS.BIRTH_DATE, author.birthDate)
+                    .where(AUTHORS.ID.eq(author.id?.value))
+            }
+        ).execute()
     }
 }
